@@ -1,0 +1,6 @@
+{
+  "name": "SummrHome",
+  "description": "Hyperlocal student PG housing marketplace, guardian safety portal, and campus classifieds bazaar.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
