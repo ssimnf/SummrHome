@@ -382,7 +382,7 @@ function BazaarDetailModal({ item, onClose }) {
   const handleSend = (e) => {
     e.preventDefault();
     if (!messageInput.trim()) return;
-    sendChatMessage(threadId, messageInput);
+    sendChatMessage(threadId, messageInput, item.sellerUid || item.sellerId);
     setMessageInput('');
   };
 
