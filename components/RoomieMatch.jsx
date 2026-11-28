@@ -14,6 +14,7 @@ import {
   X,
   Check,
   Calculator,
+  Lock,
 } from 'lucide-react';
 import { useAppState } from '@/context/AppStateContext';
 import { getTownColleges, getTownNeighborhoods } from '@/data/locations';
@@ -421,7 +422,6 @@ export default function RoomieMatch() {
   const {
     location,
     currentUser,
-    updateStudentProfile,
     roommates,
     roommateRequests,
     toggleRoommateRequest,
@@ -482,29 +482,36 @@ export default function RoomieMatch() {
           </div>
 
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-            <div
-              className="flex items-center gap-1 p-1 bg-slate-100 rounded-lg"
-              role="group"
-              aria-label="Roommate gender filter"
-            >
-              {['Male', 'Female'].map((g) => (
-                <button
-                  key={g}
-                  type="button"
-                  onClick={() => {
-                    if (isStudent) updateStudentProfile({ gender: g });
-                    else setGuestGender(g);
-                  }}
-                  className={`flex-1 sm:flex-initial px-4 py-2 text-xs font-semibold rounded-md transition-colors whitespace-nowrap cursor-pointer ${
-                    activeGender === g
-                      ? 'bg-slate-900 text-white shadow-xs'
-                      : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  {g}
-                </button>
-              ))}
-            </div>
+            {isStudent ? (
+              <div
+                className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 bg-slate-100 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 whitespace-nowrap"
+                title="Gender is locked from login"
+              >
+                <Lock className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                <span>{activeGender} Only</span>
+              </div>
+            ) : (
+              <div
+                className="flex items-center gap-1 p-1 bg-slate-100 rounded-lg"
+                role="group"
+                aria-label="Roommate gender filter"
+              >
+                {['Male', 'Female'].map((g) => (
+                  <button
+                    key={g}
+                    type="button"
+                    onClick={() => setGuestGender(g)}
+                    className={`flex-1 sm:flex-initial px-4 py-2 text-xs font-semibold rounded-md transition-colors whitespace-nowrap cursor-pointer ${
+                      activeGender === g
+                        ? 'bg-slate-900 text-white shadow-xs'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    {g}
+                  </button>
+                ))}
+              </div>
+            )}
 
             <button
               type="button"

@@ -9,6 +9,7 @@ import {
   Package,
   ShieldAlert,
   Trash2,
+  Lock,
 } from 'lucide-react';
 import {
   getStudentProfileStatus,
@@ -32,7 +33,6 @@ export default function StudentActivityView() {
   const localColleges = getTownColleges(activeCity);
 
   const [fullName, setFullName] = useState(currentUser?.name || '');
-  const [gender, setGender] = useState(currentUser?.gender || 'Male');
   const [studentDigits, setStudentDigits] = useState(
     (currentUser?.mobile || '').replace(/\D/g, '').slice(-10)
   );
@@ -89,7 +89,6 @@ export default function StudentActivityView() {
 
     updateStudentProfile({
       name: fullName.trim() || currentUser?.name,
-      gender,
       mobile: formattedStudent,
       collegeOrOrg: collegeName.trim(),
       linkedGuardianName: guardianName.trim(),
@@ -319,20 +318,18 @@ export default function StudentActivityView() {
                 htmlFor="prof-gender"
                 className="block text-xs font-medium text-slate-700 mb-1"
               >
-                Gender (PG & Roomie Filter)
+                Gender (Locked at Login)
               </label>
-              <select
+              <div
                 id="prof-gender"
-                value={gender}
-                onChange={(e) => {
-                  setGender(e.target.value);
-                  updateStudentProfile({ gender: e.target.value });
-                }}
-                className="w-full h-11 px-3 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-700"
+                className="w-full h-11 px-3 text-sm bg-slate-100 border border-slate-200 rounded-lg text-slate-700 font-medium flex items-center justify-between"
               >
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-              </select>
+                <span>{currentUser?.gender || 'Male'}</span>
+                <span className="inline-flex items-center gap-1 text-[11px] text-slate-500">
+                  <Lock className="w-3.5 h-3.5" />
+                  <span>Locked</span>
+                </span>
+              </div>
             </div>
 
             <div className="sm:col-span-2 lg:col-span-3 flex justify-end">

@@ -154,6 +154,9 @@ export function AppStateProvider({ children }) {
 
   const switchRoleDemo = (role) => {
     setState((prev) => {
+      if (prev.currentUser?.role === 'student' && role !== 'student') {
+        return prev;
+      }
       const loc = prev.location ?? {
         city: 'Sreerampore',
         district: 'Hooghly',
@@ -206,11 +209,16 @@ export function AppStateProvider({ children }) {
   const updateStudentProfile = (updates) => {
     setState((prev) => {
       if (!prev.currentUser) return prev;
+      const lockedGender =
+        prev.currentUser.role === 'student' && prev.currentUser.gender
+          ? { gender: prev.currentUser.gender }
+          : {};
       return {
         ...prev,
         currentUser: {
           ...prev.currentUser,
           ...updates,
+          ...lockedGender,
         },
       };
     });

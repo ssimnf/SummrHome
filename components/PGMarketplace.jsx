@@ -665,8 +665,7 @@ export function PGDetailModal({ pg, onClose }) {
 }
 
 export default function PGMarketplace() {
-  const { pgListings, location, currentUser, updateStudentProfile } =
-    useAppState();
+  const { pgListings, location, currentUser } = useAppState();
   const [searchQuery, setSearchQuery] = useState('');
   const [areaScope, setAreaScope] = useState('all');
   const [selectedNeighborhood, setSelectedNeighborhood] = useState('All');
@@ -778,27 +777,17 @@ export default function PGMarketplace() {
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto self-start lg:self-auto">
             {isStudent && (
               <div
-                className="flex items-center gap-1 p-1 bg-slate-100 rounded-lg"
-                role="group"
-                aria-label="Your gender preference"
+                className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 bg-slate-100 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 whitespace-nowrap"
+                title="Gender is locked from login"
               >
-                {['Male', 'Female'].map((g) => (
-                  <button
-                    key={g}
-                    type="button"
-                    onClick={() => {
-                      updateStudentProfile({ gender: g });
-                      setGenderFilter('All');
-                    }}
-                    className={`flex-1 sm:flex-initial px-3.5 py-2 text-xs font-semibold rounded-md transition-colors whitespace-nowrap cursor-pointer ${
-                      studentGender === g
-                        ? 'bg-slate-900 text-white shadow-xs'
-                        : 'text-slate-600 hover:text-slate-900'
-                    }`}
-                  >
-                    {g}
-                  </button>
-                ))}
+                <Lock className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                <span>
+                  {studentGender} (
+                  {studentGender === 'Female'
+                    ? 'Girls & Co-ed'
+                    : 'Boys & Co-ed'}
+                  )
+                </span>
               </div>
             )}
 

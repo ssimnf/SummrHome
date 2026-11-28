@@ -67,6 +67,7 @@ function SummrHomeWorkspace() {
   }
 
   const handleRoleSwitch = (role) => {
+    if (currentUser.role === 'student') return;
     switchRoleDemo(role);
     setActiveTab(role === 'student' ? 'pg' : 'dashboard');
   };

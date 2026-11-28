@@ -21,6 +21,7 @@
     roommates: DATA.roommates.slice(),
     roomieSleep: 'Night Owl',
     roomieFood: 'Non-Veg',
+    roomieGuestGender: 'Male',
     roomieRequests: [],
     bookings: [
       { id: 'bk1', pgTitle: 'Prothom Alo', student: 'Rohan Das', sharing: 'Single', date: '2026-12-05', status: 'Pending' }
@@ -251,10 +252,9 @@
               <option value="local" ${state.pgScope === 'local' ? 'selected' : ''}>Only ${state.city}</option>
             </select>
             ${isStudent ? `
-              <select id="pg-gender">
-                <option value="Male" ${activeGender === 'Male' ? 'selected' : ''}>Male (Boys & Co-ed)</option>
-                <option value="Female" ${activeGender === 'Female' ? 'selected' : ''}>Female (Girls & Co-ed)</option>
-              </select>
+              <div style="display:flex;align-items:center;padding:0 12px;min-height:44px;background:#f1f5f9;border:1px solid #cbd5e1;border-radius:8px;font-size:13px;font-weight:600;color:#334155;">
+                Locked: ${activeGender} (${activeGender === 'Female' ? 'Girls & Co-ed' : 'Boys & Co-ed'})
+              </div>
             ` : ''}
           </div>
         </div>
@@ -334,7 +334,8 @@
   }
 
   function renderRoomiesSection() {
-    const activeGender = state.user.gender || 'Male';
+    const isStudent = state.user.role === 'student';
+    const activeGender = isStudent ? (state.user.gender || 'Male') : (state.roomieGuestGender || 'Male');
     const scored = state.roommates
       .filter((rm) => (rm.gender || 'Male') === activeGender)
       .map((rm) => {
@@ -358,10 +359,16 @@
           <div class="filters-grid">
             <div>
               <label for="rm-gender">Gender</label>
-              <select id="rm-gender">
-                <option value="Male" ${activeGender === 'Male' ? 'selected' : ''}>Male</option>
-                <option value="Female" ${activeGender === 'Female' ? 'selected' : ''}>Female</option>
-              </select>
+              ${isStudent ? `
+                <div style="display:flex;align-items:center;padding:0 12px;min-height:44px;background:#f1f5f9;border:1px solid #cbd5e1;border-radius:8px;font-size:13px;font-weight:600;color:#334155;">
+                  ${activeGender} (Locked)
+                </div>
+              ` : `
+                <select id="rm-gender">
+                  <option value="Male" ${activeGender === 'Male' ? 'selected' : ''}>Male</option>
+                  <option value="Female" ${activeGender === 'Female' ? 'selected' : ''}>Female</option>
+                </select>
+              `}
             </div>
             <div>
               <label for="rm-sleep">Your Sleep Rhythm</label>
@@ -467,7 +474,7 @@
             <div style="display:flex;align-items:center;gap:16px;">
               ${renderAvatar(state.user.photo, 84)}
               <div>
-                <div class="meta-line meta-accent">Student Profile · ${state.city}</div>
+                <div class="meta-line meta-accent">Student Profile · ${state.user.gender || 'Male'} (Locked) · ${state.city}</div>
                 <h1 style="font-size:22px;">${state.user.name}</h1>
                 <p class="meta-line">${state.user.college || 'Add college name'} · <span class="mono">${state.user.mobile}</span></p>
                 <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
@@ -685,13 +692,6 @@
         state.pgScope = e.target.value;
         render();
       };
-      const pgGenderEl = document.getElementById('pg-gender');
-      if (pgGenderEl) {
-        pgGenderEl.onchange = function (e) {
-          state.user.gender = e.target.value;
-          render();
-        };
-      }
       document.querySelectorAll('[data-book-pg]').forEach((btn) => {
         btn.onclick = function () {
           const pg = state.pgs.find((p) => p.id === btn.getAttribute('data-book-pg'));
@@ -855,10 +855,13 @@
     }
 
     if (state.activeTab === 'roomies') {
-      document.getElementById('rm-gender').onchange = function (e) {
-        state.user.gender = e.target.value;
-        render();
-      };
+      const rmGenderEl = document.getElementById('rm-gender');
+      if (rmGenderEl) {
+        rmGenderEl.onchange = function (e) {
+          state.roomieGuestGender = e.target.value;
+          render();
+        };
+      }
       document.getElementById('rm-sleep').onchange = function (e) {
         state.roomieSleep = e.target.value;
         render();
