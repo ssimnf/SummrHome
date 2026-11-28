@@ -12,7 +12,6 @@ import {
   CheckCircle2,
   KeyRound,
   Sun,
-  LogIn,
 } from 'lucide-react';
 import { getTownColleges } from '@/data/locations';
 
@@ -39,20 +38,14 @@ const ROLE_OPTIONS = [
 
 const DEFAULT_OTP = '363636';
 
-export default function LoginScreen({
-  location,
-  firebaseUser,
-  authLoading,
-  onBackToGPS,
-  onGoogleSignIn,
-  onLogin,
-}) {
+export default function LoginScreen({ location, onBackToGPS, onLogin }) {
   const localColleges = getTownColleges(location.city);
 
   const [role, setRole] = useState('student');
   const [gender, setGender] = useState('Male');
-  const [name, setName] = useState(firebaseUser?.displayName || '');
-  const [email, setEmail] = useState(firebaseUser?.email || '');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [mobile, setMobile] = useState('');
   const [collegeOrOrg, setCollegeOrOrg] = useState(localColleges[0] || '');
   const [customCollege, setCustomCollege] = useState('');
@@ -70,21 +63,6 @@ export default function LoginScreen({
     }
   };
 
-  const handleGoogleButton = async () => {
-    setFormError(null);
-    try {
-      const fbUser = await onGoogleSignIn();
-      if (fbUser?.email && !email) setEmail(fbUser.email);
-      if (fbUser?.displayName && !name) setName(fbUser.displayName);
-    } catch (err) {
-      setFormError(
-        err?.code === 'auth/popup-closed-by-user'
-          ? 'Google sign-in popup was closed. Please try again.'
-          : err?.message || 'Google sign-in failed. Please try again.'
-      );
-    }
-  };
-
   const handleSendOtp = () => {
     if (mobile.length !== 10) {
       setFormError('Please enter a valid 10-digit mobile number after +91.');
@@ -95,10 +73,12 @@ export default function LoginScreen({
     setOtpInput('');
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    if (!name.trim() || mobile.length !== 10) {
-      setFormError('Please fill Full Name and a 10-digit Mobile Number.');
+    if (!name.trim() || !email.trim() || !password.trim() || mobile.length !== 10) {
+      setFormError(
+        'Please fill Full Name, ID/Email, Password, and a 10-digit Mobile Number.'
+      );
       return;
     }
 
@@ -120,23 +100,15 @@ export default function LoginScreen({
 
     const formattedMobile = `+91 ${mobile.slice(0, 5)} ${mobile.slice(5)}`;
 
-    try {
-      await onLogin({
-        role,
-        gender: role === 'student' ? gender : undefined,
-        email: firebaseUser?.email || email || 'google-user@summrhome.in',
-        name,
-        mobile: formattedMobile,
-        location,
-        collegeOrOrg: finalOrg,
-      });
-    } catch (err) {
-      setFormError(
-        err?.code === 'auth/popup-closed-by-user'
-          ? 'Google sign-in popup was closed before completing setup.'
-          : err?.message || 'Unable to sign in right now. Please try again.'
-      );
-    }
+    onLogin({
+      role,
+      gender: role === 'student' ? gender : undefined,
+      email,
+      name,
+      mobile: formattedMobile,
+      location,
+      collegeOrOrg: finalOrg,
+    });
   };
 
   return (
@@ -179,8 +151,8 @@ export default function LoginScreen({
                 Sign in to explore {location.city}
               </h1>
               <p className="mt-3 text-sm text-slate-600 leading-relaxed">
-                Sign in with Google to save your profile, PG bookings, Bazaar
-                ads, and real-time notifications in the cloud.
+                Select your role, verify your mobile number via OTP, and pick
+                your local college in {location.city}.
               </p>
 
               <div className="mt-6 pt-6 border-t border-slate-100 space-y-3">
@@ -238,41 +210,10 @@ export default function LoginScreen({
               Account Sign In & Mobile OTP
             </h2>
             <p className="text-sm text-slate-500 mt-1">
-              Returning users can sign straight in with Google to restore stored
-              data. New users complete quick onboarding below.
+              Enter your details, send OTP to your mobile number, and confirm.
             </p>
 
-            <div className="mt-4">
-              {firebaseUser ? (
-                <div className="p-3.5 rounded-xl bg-teal-50 border border-teal-200 flex items-center justify-between gap-3 text-xs">
-                  <div className="flex items-center gap-2 text-teal-900 font-medium min-w-0">
-                    <CheckCircle2 className="w-4 h-4 text-teal-700 shrink-0" />
-                    <span className="truncate">
-                      Google Verified: {firebaseUser.email}
-                    </span>
-                  </div>
-                  <span className="text-[11px] font-semibold text-teal-700 whitespace-nowrap">
-                    Complete setup below
-                  </span>
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  disabled={authLoading}
-                  onClick={handleGoogleButton}
-                  className="w-full inline-flex items-center justify-center gap-2.5 px-4 py-2.5 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-400 text-white text-xs font-semibold rounded-lg transition-colors cursor-pointer"
-                >
-                  <LogIn className="w-4 h-4" />
-                  <span>
-                    {authLoading
-                      ? 'Connecting with Google...'
-                      : 'Sign in with Google (Restore or Register)'}
-                  </span>
-                </button>
-              )}
-            </div>
-
-            <form onSubmit={handleSubmit} className="mt-5 space-y-4">
+            <form onSubmit={handleSubmit} className="mt-6 space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label
@@ -297,18 +238,16 @@ export default function LoginScreen({
                     htmlFor="login-email"
                     className="block text-xs font-medium text-slate-700 mb-1.5"
                   >
-                    Google Email
+                    Student / User ID or Email
                   </label>
                   <input
                     id="login-email"
-                    type="email"
-                    value={firebaseUser?.email || email}
-                    readOnly={Boolean(firebaseUser?.email)}
+                    type="text"
+                    required
+                    value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Filled automatically via Google Sign-In"
-                    className={`w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-700 ${
-                      firebaseUser?.email ? 'bg-slate-50 text-slate-600' : ''
-                    }`}
+                    placeholder="you@college.edu"
+                    className="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-700"
                   />
                 </div>
               </div>
@@ -316,7 +255,7 @@ export default function LoginScreen({
               {role === 'student' && (
                 <div>
                   <span className="block text-xs font-medium text-slate-700 mb-1.5">
-                    Gender (Locked After Login · Filters Matching PGs & Roomies)
+                    Gender (Filters Matching PGs & Roomies)
                   </span>
                   <div className="grid grid-cols-2 gap-2">
                     {['Male', 'Female'].map((g) => (
@@ -413,45 +352,65 @@ export default function LoginScreen({
                 </div>
               )}
 
-              <div>
-                <label
-                  htmlFor="login-org"
-                  className="block text-xs font-medium text-slate-700 mb-1.5"
-                >
-                  {role === 'student'
-                    ? `College in ${location.city}`
-                    : role === 'owner'
-                    ? 'PG Property Name'
-                    : 'Linked Student Name'}
-                </label>
-                {role === 'student' ? (
-                  <select
-                    id="login-org"
-                    value={collegeOrOrg}
-                    onChange={(e) => setCollegeOrOrg(e.target.value)}
-                    className="w-full px-3.5 py-2.5 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-700"
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label
+                    htmlFor="login-password"
+                    className="block text-xs font-medium text-slate-700 mb-1.5"
                   >
-                    {localColleges.map((col) => (
-                      <option key={col} value={col}>
-                        {col}
-                      </option>
-                    ))}
-                    <option value="__other__">Other College / Institute</option>
-                  </select>
-                ) : (
+                    Password
+                  </label>
                   <input
-                    id="login-org"
-                    type="text"
-                    value={collegeOrOrg}
-                    onChange={(e) => setCollegeOrOrg(e.target.value)}
-                    placeholder={
-                      role === 'owner'
-                        ? 'e.g., Prothom Alo'
-                        : 'Enter student full name'
-                    }
+                    id="login-password"
+                    type="password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Create or enter password"
                     className="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-700"
                   />
-                )}
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="login-org"
+                    className="block text-xs font-medium text-slate-700 mb-1.5"
+                  >
+                    {role === 'student'
+                      ? `College in ${location.city}`
+                      : role === 'owner'
+                      ? 'PG Property Name'
+                      : 'Linked Student Name'}
+                  </label>
+                  {role === 'student' ? (
+                    <select
+                      id="login-org"
+                      value={collegeOrOrg}
+                      onChange={(e) => setCollegeOrOrg(e.target.value)}
+                      className="w-full px-3.5 py-2.5 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-700"
+                    >
+                      {localColleges.map((col) => (
+                        <option key={col} value={col}>
+                          {col}
+                        </option>
+                      ))}
+                      <option value="__other__">Other College / Institute</option>
+                    </select>
+                  ) : (
+                    <input
+                      id="login-org"
+                      type="text"
+                      value={collegeOrOrg}
+                      onChange={(e) => setCollegeOrOrg(e.target.value)}
+                      placeholder={
+                        role === 'owner'
+                          ? 'e.g., Prothom Alo'
+                          : 'Enter student full name'
+                      }
+                      className="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-700"
+                    />
+                  )}
+                </div>
               </div>
 
               {role === 'student' && collegeOrOrg === '__other__' && (
@@ -483,15 +442,11 @@ export default function LoginScreen({
               <div className="pt-2">
                 <button
                   type="submit"
-                  disabled={authLoading}
-                  className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 bg-teal-700 hover:bg-teal-800 disabled:bg-slate-400 text-white text-sm font-semibold rounded-lg transition-colors cursor-pointer"
+                  className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 bg-teal-700 hover:bg-teal-800 text-white text-sm font-semibold rounded-lg transition-colors cursor-pointer"
                 >
                   <span>
-                    {authLoading
-                      ? 'Saving to SummrHome Cloud...'
-                      : firebaseUser
-                      ? `Save Profile & Enter as ${ROLE_OPTIONS.find((r) => r.id === role)?.label}`
-                      : `Verify with Google & Enter as ${ROLE_OPTIONS.find((r) => r.id === role)?.label}`}
+                    Verify & Enter SummrHome as{' '}
+                    {ROLE_OPTIONS.find((r) => r.id === role)?.label}
                   </span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
@@ -503,7 +458,7 @@ export default function LoginScreen({
 
       <footer className="max-w-5xl w-full mx-auto text-xs text-slate-500 flex items-center justify-between pt-4 border-t border-slate-200">
         <span>SummrHome · {location.city}</span>
-        <span>Firebase Cloud Auth & Real-Time Firestore</span>
+        <span>Role-based Student, Owner & Guardian Access</span>
       </footer>
     </div>
   );

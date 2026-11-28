@@ -302,7 +302,7 @@ function RoomieChatModal({ profile, score, onClose }) {
   const handleSend = (e) => {
     e.preventDefault();
     if (!text.trim()) return;
-    sendChatMessage(threadId, text, profile.studentUid);
+    sendChatMessage(threadId, text);
     setText('');
   };
 

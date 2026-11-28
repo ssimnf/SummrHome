@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { MapPin } from 'lucide-react';
 import { AppStateProvider, useAppState } from '@/context/AppStateContext';
-import ErrorBoundary from '@/components/ErrorBoundary';
 import LocationGate from '@/components/LocationGate';
 import LoginScreen from '@/components/LoginScreen';
 import TopNav from '@/components/TopNav';
@@ -19,19 +18,12 @@ import RoomieMatch from '@/components/RoomieMatch';
 function SummrHomeWorkspace() {
   const {
     hydrated,
-    firebaseUser,
-    authLoading,
     location,
     currentUser,
-    notifications,
     setLocation,
-    signInWithGoogle,
     login,
     logout,
     switchRoleDemo,
-    markNotificationRead,
-    markAllNotificationsRead,
-    deleteNotification,
     resetDemoState,
   } = useAppState();
 
@@ -65,15 +57,10 @@ function SummrHomeWorkspace() {
     return (
       <LoginScreen
         location={location}
-        firebaseUser={firebaseUser}
-        authLoading={authLoading}
         onBackToGPS={() => setLocationConfirmed(false)}
-        onGoogleSignIn={signInWithGoogle}
-        onLogin={async (payload) => {
-          const user = await login(payload);
-          if (user) {
-            setActiveTab(user.role === 'student' ? 'pg' : 'dashboard');
-          }
+        onLogin={(payload) => {
+          login(payload);
+          setActiveTab(payload.role === 'student' ? 'pg' : 'dashboard');
         }}
       />
     );
@@ -91,13 +78,9 @@ function SummrHomeWorkspace() {
         user={currentUser}
         location={location}
         activeTab={activeTab}
-        notifications={notifications}
         onSelectTab={setActiveTab}
         onOpenLocationModal={() => setShowLocationModal(true)}
         onSwitchRole={handleRoleSwitch}
-        onMarkNotificationRead={markNotificationRead}
-        onMarkAllNotificationsRead={markAllNotificationsRead}
-        onDeleteNotification={deleteNotification}
         onLogout={() => {
           logout();
           setLocationConfirmed(true);
@@ -165,7 +148,7 @@ function SummrHomeWorkspace() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500">
           <span>SummrHome · Hyperlocal Student Housing & Bazaar</span>
           <span>
-            Serving {location.city}, Hooghly & Kolkata · Firebase Cloud Backend
+            Serving {location.city}, Hooghly & Kolkata · Frontend Prototype
           </span>
         </div>
       </footer>
@@ -183,10 +166,8 @@ function SummrHomeWorkspace() {
 
 export default function SummrHomeApp() {
   return (
-    <ErrorBoundary>
-      <AppStateProvider>
-        <SummrHomeWorkspace />
-      </AppStateProvider>
-    </ErrorBoundary>
+    <AppStateProvider>
+      <SummrHomeWorkspace />
+    </AppStateProvider>
   );
 }
